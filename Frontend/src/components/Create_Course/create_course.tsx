@@ -37,7 +37,7 @@ export function CreateCourseModal({ open, onClose }: Props) {
   ];
   
   const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
-  const MIN_WIDTH = 1280;
+  const MIN_WIDTH = 500;
   const MIN_HEIGHT = 720;
   const EXPECTED_RATIO = 16 / 9;
   const RATIO_TOLERANCE = 0.05;
