@@ -5,7 +5,7 @@ export const handleCreateUploadUrl = async ( req: Request, res: Response ) => {
   try {
     const upload = await mux.video.uploads.create({
       new_asset_settings: {
-        playback_policy: ["public"],
+        playback_policy: ["signed"],
       },
 
       cors_origin: process.env.FRONTEND_URL!,

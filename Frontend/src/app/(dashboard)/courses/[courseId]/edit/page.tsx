@@ -4,17 +4,7 @@ import { useState, useEffect } from "react";
 import { UploadCard } from "@/components/Create_Course/uploadCard";
 import { useParams, useRouter } from "next/navigation";
 import { getCourse } from "@/serverAction/learn";
-import { 
-  ArrowLeft, 
-  Plus, 
-  Video, 
-  GripVertical, 
-  Save, 
-  Trash2,
-  X,
-  ChevronDown,
-  ChevronUp
-} from "lucide-react";
+import {  ArrowLeft,  Plus,  Video, GripVertical,  Save,  Trash2, X, ChevronDown, ChevronUp} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";

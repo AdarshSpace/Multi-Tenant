@@ -35,6 +35,7 @@
     "langchain": "^0.3.37",
     "pdf-parse": "^1.1.1",
     "prisma": "^7.8.0",
-    "razorpay": "^2.9.6"
+    "razorpay": "^2.9.6",
+    "zod": "^3.25.76"
   }
 }

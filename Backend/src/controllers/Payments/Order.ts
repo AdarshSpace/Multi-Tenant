@@ -18,8 +18,6 @@ export const createOrder = async (req: Request, res: Response) => {
     const userId = req.user?.id as string
     const  RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID
 
-    console.log("courseId : ", courseId, " userId : ", userId);
-    console.log('Key ID : ', process.env.RAZORPAY_KEY_ID, '  SECERET KEY : ', process.env.RAZORPAY_SECRET);  
 
     // 1. validate course
     const course = await prisma.course.findUnique({

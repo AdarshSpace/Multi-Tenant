@@ -4,6 +4,9 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from './DB.js';
 
 
+const isProd = process.env.NODE_ENV === "production";
+console.log("isProd : ", isProd);
+
 export const auth = betterAuth({
      baseURL: process.env.BACKEND_URL,
     database: prismaAdapter(prisma, {
@@ -31,7 +34,7 @@ export const auth = betterAuth({
     ],
 
 
-    advanced: {
+    advanced: isProd ? {
     crossSubDomainCookies: {
         enabled: true,                    // ✅ was false — this was the bug
         domain: ".motionkart.online",     // ✅ dot prefix is important
@@ -41,7 +44,12 @@ export const auth = betterAuth({
         secure: true,
         partitioned: true,                // ✅ add this too
     }
-},
+} : {
+    defaultCookieAttributes: {
+      sameSite: "lax",
+      secure: false,
+    },
+  },
 
      user: {
          additionalFields: {

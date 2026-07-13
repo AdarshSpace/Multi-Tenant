@@ -6,10 +6,14 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
 import { getCourse, getChatHistory, sendChat } from '@/serverAction/learn';
+import { authClient } from "@/lib/auth";
+
+import { QuizTab } from "@/components/LearnCourse/QuizTab";
+import { AssignmentTab } from "@/components/LearnCourse/AssignmentTab";
 
 import {
   Play, CheckCircle, Download, FileText, MessageSquare,
-  Bookmark, Share2, SendHorizontal, Sparkles, Bot, User, BookOpen, Loader2, AlertCircle, Navigation, NavigationIcon} from "lucide-react";
+  Bookmark, Share2, SendHorizontal, Sparkles, Bot, User, BookOpen, Loader2, AlertCircle, Navigation, NavigationIcon, ListChecks, PenTool} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -28,6 +32,16 @@ export default function CoursePlayerPage() {
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+
+  // ── Secure Mux playback token state ──
+  const [playbackId, setPlaybackId] = useState<string | null>(null);
+  const [playbackToken, setPlaybackToken] = useState<string | null>(null);
+  const [thumbnailToken, setThumbnailToken] = useState<string | null>(null);
+  const [playbackLoading, setPlaybackLoading] = useState(false);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
+
+  const { data: session } = authClient.useSession();
+  const [generateAssessmentLoading, setGenerateAssessmentLoading] = useState(false);
 
   // ── AI Chat State ──
   interface ChatMessage {
@@ -139,7 +153,7 @@ export default function CoursePlayerPage() {
   async function fetchCourse(courseId: string) {
     try {
       const { data } = await getCourse(courseId);
-
+      console.log(data);
       setCourseData(data);
     } catch (error) {
       console.log('Error : ', error);
@@ -254,6 +268,76 @@ export default function CoursePlayerPage() {
     }
   }
 
+  // ── Fetch a fresh Mux playback token whenever the active lesson changes ──
+  useEffect(() => {
+    // Reset immediately so stale tokens are never reused across videos
+    setPlaybackId(null);
+    setPlaybackToken(null);
+    setThumbnailToken(null);
+    setPlaybackError(null);
+
+    if (!activeLesson?.id) return;
+
+    // Locked videos: no token needed — the locked overlay will be shown
+    if (activeLesson.isLocked) return;
+
+    let cancelled = false;
+    setPlaybackLoading(true);
+
+    fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/video/${activeLesson.id}/playback-token`,
+      { credentials: "include" }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data.success) {
+          setPlaybackId(data.playbackId);
+          setPlaybackToken(data.playbackToken);
+          setThumbnailToken(data.thumbnailToken ?? data.playbackToken);
+        } else {
+          setPlaybackError(data.message || "Could not load video");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPlaybackError("Failed to load video. Please try again.");
+      })
+      .finally(() => {
+        if (!cancelled) setPlaybackLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [activeLesson?.id, activeLesson?.isLocked]);
+
+  // ── Generate Assessment ──
+  async function handleGenerateAssessment() {
+    if (!activeLesson?.notesUrl) {
+      alert("No PDF notes available for this lecture.");
+      return;
+    }
+    
+    setGenerateAssessmentLoading(true);
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/video/${activeLesson.id}/generate-assessment`, {
+        method: "POST",
+        credentials: "include",
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        alert("Assessment generated successfully.");
+      } else {
+        alert(data.message || "Error generating assessment.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to generate assessment. Please try again.");
+    } finally {
+      setGenerateAssessmentLoading(false);
+    }
+  }
+
   return (
     <div className="flex flex-col lg:flex-row gap-8 bg-white animate-in fade-in duration-500 pb-20 p-2 rounded-3xl">
 
@@ -263,11 +347,51 @@ export default function CoursePlayerPage() {
         {/* Video Player */}
         <div className="w-full bg-black relative group shadow-2xl rounded-2xl overflow-hidden mb-10">
           <div className="aspect-video relative w-full h-full">
-             <MuxPlayer playbackId={activeLesson?.muxPlaybackId} thumbnailTime={21} streamType="on-demand" className="w-full h-full"
-              style={{
-                '--media-primary-color': '#FFFFFF',      // timeline / progress bar
-                '--media-accent-color': '#3b82f6',        // hover / accent
-              } }/>
+
+            {/* ── Locked overlay ── */}
+            {activeLesson?.isLocked && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 z-10">
+                <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
+                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <p className="text-white font-bold text-lg mb-1">This lesson is locked</p>
+                <p className="text-slate-400 text-sm">Purchase the course to unlock all videos.</p>
+              </div>
+            )}
+
+            {/* ── Loading skeleton ── */}
+            {!activeLesson?.isLocked && playbackLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-900 z-10">
+                <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+              </div>
+            )}
+
+            {/* ── Playback error ── */}
+            {!activeLesson?.isLocked && !playbackLoading && playbackError && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 z-10">
+                <AlertCircle className="w-8 h-8 text-red-400 mb-3" />
+                <p className="text-white font-semibold text-sm">{playbackError}</p>
+              </div>
+            )}
+
+            {/* ── Mux Player (token-secured) ── */}
+            {!activeLesson?.isLocked && !playbackLoading && !playbackError && playbackId && playbackToken && thumbnailToken && (
+              <MuxPlayer
+                key={`${activeLesson?.id}-${playbackToken}`}
+                playbackId={playbackId}
+                tokens={{ playback: playbackToken, thumbnail: thumbnailToken }}
+                thumbnailTime={21}
+                streamType="on-demand"
+                className="w-full h-full"
+                style={{
+                  '--media-primary-color': '#FFFFFF',
+                  '--media-accent-color': '#3b82f6',
+                } as any}
+              />
+            )}
+
           </div>
         </div>
 
@@ -283,6 +407,27 @@ export default function CoursePlayerPage() {
               <p className="text-slate-400 font-medium">Course: {courseData?.title}</p>
             </div>
             <div className="flex items-center gap-3 shrink-0 pt-2">
+              {(session?.user as any)?.role === "TEACHER" && (
+                <Button
+                  onClick={handleGenerateAssessment}
+                  disabled={generateAssessmentLoading}
+                  variant="outline"
+                  size="lg"
+                  className="gap-2 border-slate-200 h-11 px-5 font-bold text-slate-700 hover:bg-slate-50 transition-all rounded-xl"
+                >
+                  {generateAssessmentLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Generate Assessment
+                    </>
+                  )}
+                </Button>
+              )}
               <Button
                 onClick={handleSave}
                 disabled={saveLoading}
@@ -342,6 +487,20 @@ export default function CoursePlayerPage() {
               >
                 <Sparkles className="w-4 h-4 mr-2 inline-block" />
                 Ask Doubt
+              </TabsTrigger>
+              <TabsTrigger
+                value="quiz"
+                className="rounded-xl px-10 py-3.5 text-sm font-bold tracking-tight data-active:bg-white data-active:shadow-xl data-active:text-slate-900 text-slate-500 transition-all cursor-pointer flex-1 lg:flex-none"
+              >
+                <ListChecks className="w-4 h-4 mr-2 inline-block" />
+                Quiz
+              </TabsTrigger>
+              <TabsTrigger
+                value="assignment"
+                className="rounded-xl px-10 py-3.5 text-sm font-bold tracking-tight data-active:bg-white data-active:shadow-xl data-active:text-slate-900 text-slate-500 transition-all cursor-pointer flex-1 lg:flex-none"
+              >
+                <PenTool className="w-4 h-4 mr-2 inline-block" />
+                Assignment
               </TabsTrigger>
             </TabsList>
 
@@ -583,6 +742,16 @@ export default function CoursePlayerPage() {
                   </div>
 
                 </div>
+              </TabsContent>
+
+              {/* Quiz Tab */}
+              <TabsContent value="quiz" className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-700 outline-none">
+                <QuizTab quiz={activeLesson?.quiz} />
+              </TabsContent>
+
+              {/* Assignment Tab */}
+              <TabsContent value="assignment" className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-700 outline-none">
+                <AssignmentTab assignment={activeLesson?.assignment} />
               </TabsContent>
 
             </div>

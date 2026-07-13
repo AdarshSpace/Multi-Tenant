@@ -32,6 +32,9 @@ model User {
   chatMessages ChatMessage[]
   savedVideos SavedVideo[]
 
+  studentQuizResponses StudentQuizResponse[]
+
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
@@ -113,6 +116,8 @@ model Course {
   modules     Module[]
   chatMessages ChatMessage[]
 
+  
+
   purchases   Purchase[]
   payments    Payment[]
 
@@ -176,9 +181,15 @@ model Video {
   moduleId    String
   module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
+    // AI Generated Content
+  quiz        Json?
+  assignment  Json?
+
   videoProgress VideoProgress[]
   chatMessages ChatMessage[]
   savedVideos SavedVideo[]
+
+  studentQuizResponses StudentQuizResponse[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -188,6 +199,33 @@ model Video {
 
   @@index([moduleId])
   @@map("videos")
+}
+
+model StudentQuizResponse {
+
+  id String @id @default(cuid())
+
+  studentId String
+  videoId String
+
+  answers Json
+
+  score Int
+
+  totalQuestions Int
+
+  submittedAt DateTime @default(now())
+
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, videoId])
+
+  @@index([studentId])
+  @@index([videoId])
+
+  @@map("student_quiz_responses")
 }
 
 model Purchase {
