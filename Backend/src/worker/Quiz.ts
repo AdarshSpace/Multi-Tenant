@@ -66,10 +66,7 @@ export const assessmentSchema = z.object({
 
 export type AssessmentResponse = z.infer<typeof assessmentSchema>;
 
-// ─────────────────────────────────────────────
-// GEMINI-COMPATIBLE JSON SCHEMA (no refinements —
-// Gemini's responseSchema can't express those)
-// ─────────────────────────────────────────────
+
 
 const geminiResponseSchema = {
   type: "object",
@@ -130,9 +127,7 @@ const geminiResponseSchema = {
   required: ["quiz", "assignment"],
 };
 
-// ─────────────────────────────────────────────
-// PDF FETCHING
-// ─────────────────────────────────────────────
+
 
 async function fetchPdf(pdfUrl: string): Promise<Buffer> {
   if (!pdfUrl?.trim()) {
@@ -166,9 +161,7 @@ async function fetchPdf(pdfUrl: string): Promise<Buffer> {
   return buffer;
 }
 
-// ─────────────────────────────────────────────
-// PROMPT
-// ─────────────────────────────────────────────
+
 
 const BASE_PROMPT = `
 You are an expert educational assessment creator.
@@ -206,9 +199,7 @@ Assignment Rules:
 - totalQuestions must equal the number of items in questions.
 `.trim();
 
-// ─────────────────────────────────────────────
-// RAW REST CALL TO GEMINI (no SDK)
-// ─────────────────────────────────────────────
+
 
 interface GeminiPart {
   text?: string;
@@ -268,9 +259,7 @@ async function callGemini(parts: GeminiPart[]): Promise<unknown> {
   }
 }
 
-// ─────────────────────────────────────────────
-// MAIN EXPORT
-// ─────────────────────────────────────────────
+
 
 export async function generateAssessment(pdfUrl: string): Promise<AssessmentResponse> {
   const pdfBuffer = await fetchPdf(pdfUrl);
