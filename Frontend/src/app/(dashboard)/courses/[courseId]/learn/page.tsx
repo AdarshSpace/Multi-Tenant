@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
 import { getCourse, getChatHistory, sendChat } from '@/serverAction/learn';
+import { generateAssessment } from '@/serverAction/assessment';
 import { authClient } from "@/lib/auth";
 
 import { QuizTab } from "@/components/LearnCourse/QuizTab";
@@ -315,20 +316,16 @@ export default function CoursePlayerPage() {
       alert("No PDF notes available for this lecture.");
       return;
     }
-    
+
     setGenerateAssessmentLoading(true);
-    
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/video/${activeLesson.id}/generate-assessment`, {
-        method: "POST",
-        credentials: "include",
-      });
-      
-      const data = await response.json();
-      if (data.success) {
+      const data = await generateAssessment(activeLesson.id);
+
+      if (data?.success) {
         alert("Assessment generated successfully.");
       } else {
-        alert(data.message || "Error generating assessment.");
+        alert(data?.message || "Error generating assessment.");
       }
     } catch (error) {
       console.error(error);
