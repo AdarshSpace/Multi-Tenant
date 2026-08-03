@@ -1,83 +1,71 @@
-"use server"
+"use server";
 
-import { cookies } from "next/headers";
-
+import { authHeaders } from "@/lib/server-auth";
 
 export const getCourse = async (courseId: string) => {
-    try{
-        const cookieStore = await cookies();
-        const response =  await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/course/${courseId}/curriculum`, {
-            headers: {
-                cookie: cookieStore.toString(),  
-            }
-        });
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/course/${courseId}/curriculum`,
+      {
+        headers: await authHeaders(),
+        cache: "no-store",
+      }
+    );
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if(!data.success){
-            return data.error;
-        }
-
-        return data;
-    }
-    catch(err){
-        console.log(err);
-        return null;
+    if (!data.success) {
+      return data.error;
     }
 
-}
+    return data;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+};
 
 export const getChatHistory = async (courseId: string, videoId: string) => {
-    try{
-        const cookieStore = await cookies();
-        const response =  await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chat/fetch/${courseId}/${videoId}`, {
-            headers: {
-                cookie: cookieStore.toString(),  
-            }
-        });
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chat/fetch/${courseId}/${videoId}`,
+      {
+        headers: await authHeaders(),
+        cache: "no-store",
+      }
+    );
 
-        const data = await response.json();
-        console.log("Data from getChatHistory : ", data);
+    const data = await response.json();
 
-        if(!data.success){
-            return data.error;
-        }
-
-        return data;
-    }
-    catch(err){
-        console.log(err);
-        return null;
+    if (!data.success) {
+      return data.error;
     }
 
-}
+    return data;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+};
 
 export const sendChat = async (courseId: string, videoId: string, question: string) => {
-    try{
-        console.log("from server action sendChat : ", question, courseId, videoId)
-        const cookieStore = await cookies();
-        const response =  await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chat/ask`, {
-            method: "POST",
-            headers: {
-                cookie: cookieStore.toString(),  
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({question, courseId, videoId}),
-        });
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chat/ask`, {
+      method: "POST",
+      headers: await authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ question, courseId, videoId }),
+      cache: "no-store",
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        console.log("Data from sendChat : ", data);
-
-        if(!data.success){
-            return data.error;
-        }
-
-        return data;
-    }
-    catch(err){
-        console.log(err);
-        return null;
+    if (!data.success) {
+      return data.error;
     }
 
-}
+    return data;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+};

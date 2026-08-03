@@ -5,6 +5,7 @@ import { useState } from "react";
 import { upload } from "@imagekit/next";
 import Body from "./Body";
 import { useForm } from "react-hook-form";
+import { apiFetch } from "@/lib/api";
 
 
 type Props = {
@@ -119,9 +120,7 @@ export function CreateCourseModal({ open, onClose }: Props) {
     try {
           console.log('Thumbnail : ',thumbnail)
       // Ask backend for ImageKit auth
-      const authRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/video/auth`,{
-        credentials: "include",        
-        });
+      const authRes = await apiFetch(`/api/video/auth`);
       console.log('Auth Res : ', authRes);
       const authData = await authRes.json();
 
@@ -147,14 +146,10 @@ export function CreateCourseModal({ open, onClose }: Props) {
 
       console.log( data.title, data.description, data.category, data.price, data.oldPrice, res.url);
 
-      const result = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/course/create`,
+      const result = await apiFetch(
+        `/api/course/create`,
         {
           method: "POST",
-          credentials: "include", // ✅ browser sends cookie automatically
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({title: data.title,
             description: data.description,
             category: data.category,

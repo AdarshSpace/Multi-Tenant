@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authentication } from "../middleware/authentication.js";
+import { requireAuth } from "../middleware/auth.js";
 import { createCourse } from "../controllers/Courses/CreateCourses.js";
 import { getCourses } from "../controllers/Courses/GetAllCourses.js";
 import { deleteCourse } from "../controllers/Courses/DeleteCourses.js";
@@ -11,7 +11,7 @@ import { GetNotes } from "../controllers/Courses/notes.js";
 const router = Router();
 
 // Apply authentication middleware to all routes below
-router.use(authentication);
+router.use(requireAuth);
 
 router.post("/create", createCourse);
 router.get("/getAll", getCourses);

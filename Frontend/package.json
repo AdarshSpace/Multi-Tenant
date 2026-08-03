@@ -16,7 +16,7 @@
     "@imagekit/next": "^2.1.5",
     "@mux/mux-player-react": "^3.13.0",
     "@tailwindcss/postcss": "^4.2.4",
-    "better-auth": "^1.6.10",
+    "@videosdk.live/react-sdk": "^1.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "hls.js": "^1.6.16",

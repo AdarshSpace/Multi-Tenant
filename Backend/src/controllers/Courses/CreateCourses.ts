@@ -7,8 +7,16 @@ export const createCourse = async (req: Request, res: Response) => {
     console.log("Req User : ", req.user);
     const { title, description, thumbnail, price, oldPrice, rating, students, lessons, duration, category, } = req.body;
 
-    const teacherId = req.user?.id as string; 
+    const teacherId = req.user?.userId;
+    const tenantId = req.user?.tenantId;
     console.log("Teacher ID: ", teacherId);
+
+    if (!teacherId || !tenantId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     // Validation
     if (!title || !description || !price || !oldPrice || !category || !thumbnail) {
@@ -20,6 +28,11 @@ export const createCourse = async (req: Request, res: Response) => {
 
     const course = await prisma.course.create({
       data: {
+        tenant: {
+          connect: {
+            id: tenantId,
+          },
+        },
         teacher: {
           connect: {
             id: teacherId,

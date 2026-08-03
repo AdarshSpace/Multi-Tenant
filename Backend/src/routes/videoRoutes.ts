@@ -1,13 +1,13 @@
 import express from 'express';
 import { generateUploadAuth } from '../lib/imagekit.js';
-import { authentication } from '../middleware/authentication.js';
+import { requireAuth } from "../middleware/auth.js";
 import {handleCreateUploadUrl} from "../controllers/Mux/createUpload.js"
 import { handleGenerateAssessment } from '../controllers/Chat/assessment.js';
 import { handleGetPlaybackToken } from '../controllers/Mux/playbackToken.js';
 
 
 const router = express.Router();
-router.use(authentication);
+router.use(requireAuth);
 
 router.get('/auth', generateUploadAuth);
 router.post('/create', handleCreateUploadUrl);

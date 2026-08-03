@@ -8,90 +8,140 @@ datasource db {
   provider = "mysql"
 }
 
+
+// ============================================================
+// TENANT
+// ============================================================
+
+model Tenant {
+  id           String   @id @default(cuid())
+
+  // Identity
+  name         String
+  slug         String   @unique
+  subdomain    String?  @unique
+  customDomain String?  @unique
+
+  // Branding
+  logo         String?
+
+  // Contact
+  email        String?
+  phone        String?
+
+  // Status — false until DNS is verified for customDomain
+  isActive     Boolean  @default(true)
+
+  // Relations
+  users        User[]
+  courses      Course[]
+  purchases    Purchase[]
+  payments     Payment[]
+  LiveMeetings LiveMeeting[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ============================================================
+// AUTH — custom JWT + DB-session based (no better-auth)
+// ============================================================
+
 enum Role {
   STUDENT
   TEACHER
   ADMIN
 }
 
-
 model User {
-  id            String    @id
+  id            String    @id @default(cuid())
   name          String    @db.Text
   email         String
   emailVerified Boolean   @default(false)
   role          Role      @default(STUDENT)
   image         String?   @db.Text
 
-  createdCourses Course[]
-  purchases      Purchase[]
-  payments       Payment[]
+  // null for users who ONLY ever signed up via Google/GitHub
+  password      String?   @db.Text
 
-  courseProgresses CourseProgress[]
-  videoProgresses  VideoProgress[]
-  chatMessages ChatMessage[]
-  savedVideos SavedVideo[]
+  tenantId      String
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
+  sessions      Session[]
+  oauthAccounts OAuthAccount[]
+
+  createdCourses       Course[]
+  purchases            Purchase[]
+  payments             Payment[]
+  courseProgresses     CourseProgress[]
+  videoProgresses      VideoProgress[]
+  chatMessages         ChatMessage[]
+  savedVideos          SavedVideo[]
+  LiveMeetings         LiveMeeting[]
   studentQuizResponses StudentQuizResponse[]
-
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
 
-  @@unique([email])
+  // 👇 IMPORTANT: email is unique PER TENANT, not globally.
+  // The same email can exist as a user on two different tenants.
+  @@unique([tenantId, email])
   @@map("user")
 }
 
+// One row = one active login (one browser / one device).
+// v1: minimal fields. v2: add ipAddress, userAgent, deviceLabel, lastUsedAt etc.
+// without breaking anything that already exists.
 model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?  @db.Text
-  userAgent String?  @db.Text
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
+  // we NEVER store the raw refresh token, only its sha256 hash
+  refreshTokenHash String   @unique
+
+  revoked          Boolean  @default(false)
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+
   @@index([userId])
   @@map("session")
 }
 
-model Account {
-  id                    String    @id
-  accountId             String    @db.Text
-  providerId            String    @db.Text
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?   @db.Text
-  refreshToken          String?   @db.Text
-  idToken               String?   @db.Text
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?   @db.Text
-  password              String?   @db.Text
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+// Links a User to a Google/GitHub identity.
+model OAuthAccount {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  provider          String   // "google" | "github"
+  providerAccountId String   // the "sub" (Google) or "id" (GitHub) from the provider
+
+  createdAt         DateTime @default(now())
+
+  @@unique([provider, providerAccountId])
   @@index([userId])
-  @@map("account")
+  @@map("oauth_account")
 }
 
-model Verification {
-  id         String   @id
-  identifier String   @db.Text
-  value      String   @db.Text
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+// Short-lived, single-use code used to hand off tokens from the
+// OAuth callback (on api.motionkart.online.com) to the tenant's
+// frontend (e.g. motionkart.online.com) safely.
+model OAuthHandoff {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  accessToken  String   @db.Text
+  refreshToken String   @db.Text
+  expiresAt    DateTime // very short TTL, e.g. now + 60s
+  used         Boolean  @default(false)
+  createdAt    DateTime @default(now())
 
-  @@index([identifier(length: 191)])
-  @@map("verification")
+  @@map("oauth_handoff")
 }
 
+// ============================================================
+// COURSES
+// ============================================================
 
 
 model Course {
@@ -113,10 +163,12 @@ model Course {
   teacherId   String
   teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
+  tenantId      String
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   modules     Module[]
   chatMessages ChatMessage[]
 
-  
 
   purchases   Purchase[]
   payments    Payment[]
@@ -131,6 +183,15 @@ model Course {
   @@index([teacherId])
   @@map("courses")
 }
+
+// ============================================================
+// NOTE: Module, Purchase, Payment, CourseProgress, VideoProgress,
+// ChatMessage, SavedVideo, LiveMeeting, StudentQuizResponse models
+// already exist in your current schema file — keep them exactly
+// as they are, just make sure they still point to User/Course/Tenant
+// the same way (no field renames needed on their side).
+// ============================================================
+
 
 model Module {
   id         String   @id @default(cuid())
@@ -236,6 +297,10 @@ model Purchase {
   userId      String
   courseId    String
 
+  tenantId      String
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+
   user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   course      Course   @relation(fields: [courseId], references: [id], onDelete: Restrict)
 
@@ -331,6 +396,9 @@ model Payment {
   // relations
   userId            String
   courseId          String
+  tenantId          String
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
 
   user              User             @relation(fields: [userId], references: [id], onDelete: Restrict)
   course            Course           @relation(fields: [courseId], references: [id], onDelete: Restrict)
@@ -400,4 +468,43 @@ model VideoProgress {
   @@index([videoId])
 
   @@map("video_progress")
+}
+
+enum LiveMeetingStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+  CANCELLED
+}
+
+model LiveMeeting {
+  id          String            @id @default(cuid())
+
+  title       String
+  description String?
+
+  roomId      String?           @unique
+
+  teacherId   String
+  teacher     User              @relation(fields: [teacherId], references: [id])
+
+  tenantId    String
+  tenant      Tenant            @relation(fields: [tenantId], references: [id])
+
+  status      LiveMeetingStatus @default(SCHEDULED)
+
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  endedAt     DateTime?
+
+  isRecorded  Boolean           @default(false)
+  recordingUrl String?
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([teacherId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([scheduledAt])
 }

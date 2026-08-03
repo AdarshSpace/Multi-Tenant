@@ -35,7 +35,7 @@ function sanitizeVideo(video: VideoRecord, hasPurchased: boolean) {
 
 export const getCurriculum = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id as string;
+    const userId = req.user?.userId;
     const { courseId } = req.params as { courseId: string };
 
     if (!userId) {

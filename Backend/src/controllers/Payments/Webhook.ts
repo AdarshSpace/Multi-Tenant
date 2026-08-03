@@ -98,6 +98,7 @@ export const webhookHandler = async ( req: Request, res: Response ) => {
           create: {
             userId: payment.userId,
             courseId: payment.courseId,
+            tenantId: payment.tenantId,
           },
         });
       }

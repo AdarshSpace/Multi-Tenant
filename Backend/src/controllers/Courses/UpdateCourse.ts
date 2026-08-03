@@ -8,7 +8,7 @@ import { mux } from "../../lib/mux.js";
 export const addVideo = async (req: Request, res: Response) => {
 
   try {
-    const teacherId = req.user?.id;
+    const teacherId = req.user?.userId;
     const courseId = req.params.courseId as string;
 
     console.log(courseId);

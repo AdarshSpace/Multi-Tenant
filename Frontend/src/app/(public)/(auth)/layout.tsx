@@ -1,17 +1,11 @@
 export const dynamic = "force-dynamic";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
+import { isAuthenticated } from "@/lib/server-auth";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-  
-  const cookieStore = await cookies();
-  const token = cookieStore.get("__Secure-better-auth.session_token") || cookieStore.get("better-auth.session_token");
-  if(token) {
+  if (await isAuthenticated()) {
     redirect("/home");
   }
 
-  return (
-    <>{children}</>    
-  );
+  return <>{children}</>;
 }

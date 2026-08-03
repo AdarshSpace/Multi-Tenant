@@ -1,9 +1,10 @@
 
 "use client";
 
-import { Home, PlaySquare, Folder, User, Settings, LogOut, FileVideo, SaveIcon, Bookmark, GraduationCap } from "lucide-react";
+import { Home, PlaySquare, Folder, User, Settings, LogOut, FileVideo, SaveIcon, Bookmark, GraduationCap, Video } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { logout } from "@/lib/auth";
 
 
 export function Sidebar() {
@@ -13,6 +14,7 @@ export function Sidebar() {
   const menuItems = [
     { icon: Home, label: "Home", path: "/home" },
     { icon: PlaySquare, label: "Courses", path: "/courses" },
+    { icon: Video, label: "Live Class", path: "/live-class" },
     { icon: Folder, label: "Documents", path: "/documents" },
     { icon: Bookmark, label: "Saved Videos", path: "/saved" },
     // { icon: User, label: "Profile", path: "/profile" },
@@ -20,21 +22,14 @@ export function Sidebar() {
   ];
 
   async function handleLogout() {
-  try {
-      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/sign-out`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    router.refresh();
-    router.replace("/login");
-
-  } catch (err) {
-    console.error("Logout failed", err);
-  } finally {
-    router.push("/login"); // always redirect even if request fails
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      router.push("/login");
+    }
   }
-}
 
   return (
     <div className="hidden md:flex w-20 bg-[#0039a6] h-screen fixed left-0 top-0 flex-col items-center pt-4 pb-6 text-white z-50">

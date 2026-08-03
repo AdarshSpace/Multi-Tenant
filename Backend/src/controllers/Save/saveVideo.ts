@@ -3,19 +3,25 @@ import { prisma } from "../../lib/DB.js";
 
 // ── Save a video ──
 export const SaveVideo = async (req: Request, res: Response) => {
-  const userId = req.user?.id as string;
+  const userId = req.user?.userId;
   const { videoId, courseId } = req.body;
 
-  if (!videoId || !courseId)
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  if (!videoId || !courseId) {
     return res.status(400).json({ success: false, message: "videoId and courseId are required" });
+  }
 
   // check user purchased this course
   const purchase = await prisma.purchase.findUnique({
     where: { userId_courseId: { userId, courseId } },
   });
 
-  if (!purchase || !purchase.paid)
+  if (!purchase || !purchase.paid) {
     return res.status(403).json({ success: false, message: "You have not purchased this course" });
+  }
 
   // upsert so hitting save twice doesn't throw
   const saved = await prisma.savedVideo.upsert({
@@ -29,8 +35,12 @@ export const SaveVideo = async (req: Request, res: Response) => {
 
 // ── Unsave a video ──
 export const UnsaveVideo = async (req: Request, res: Response) => {
-  const userId = req.user?.id as string;
+  const userId = req.user?.userId;
   const { videoId } = req.params as { videoId: string };
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
 
   await prisma.savedVideo.deleteMany({
     where: { userId, videoId },
@@ -41,8 +51,12 @@ export const UnsaveVideo = async (req: Request, res: Response) => {
 
 // ── Check if a video is saved (for the Save button state) ──
 export const CheckSaved = async (req: Request, res: Response) => {
-  const userId = req.user?.id as string;
+  const userId = req.user?.userId;
   const { videoId } = req.params as { videoId: string };
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
 
   const saved = await prisma.savedVideo.findUnique({
     where: { userId_videoId: { userId, videoId } },
@@ -53,7 +67,11 @@ export const CheckSaved = async (req: Request, res: Response) => {
 
 // ── Get all saved videos for the user ──
 export const GetSavedVideos = async (req: Request, res: Response) => {
-  const userId = req.user?.id as string;
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
 
   const savedVideos = await prisma.savedVideo.findMany({
     where: { userId },

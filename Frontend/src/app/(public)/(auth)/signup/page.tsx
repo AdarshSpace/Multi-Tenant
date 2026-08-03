@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-import { authClient } from "@/lib/auth";
+import { register as registerUser, startGithubOAuth, startGoogleOAuth } from "@/lib/auth";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -60,60 +60,28 @@ export default function SignupPage() {
     const router = useRouter();
 
     const onSubmit = async (data: z.infer<typeof signupSchema>) => {
-
         const { name, email, password } = data;
-        console.log(name, email, password);
         try {
           setLoading(true);
-        const response = await authClient.signUp.email({
-            name: name,
-            email: email,
-            password: password,
-          }
-        );
-                
-        if (!response.data) {
-            setError("root", { type: "server",  message: response.error.message || "Invalid email or password" });
-            return;
-        }
-
-        router.push("/login");
-            
-       return { success: true, message: "User created successfully" };
-           
-            
+          await registerUser(name, email, password);
+          router.push("/home");
         } catch (error) {
-            console.error(error);
+            setError("root", {
+              type: "server",
+              message: error instanceof Error ? error.message : "Registration failed",
+            });
         } finally {
           setLoading(false);
         }
     } 
 
-    const handleGoogleSignUp = async () => {
-        console.log('This is working .....')
-        try{
-            const response = await authClient.signIn.social({
-                provider: "google",
-                callbackURL: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/courses`, 
-                });
-
-     console.log(response)
-        } 
-        catch(error){
-            console.log(error)
-        }
-      };
+    const handleGoogleSignUp = () => {
+      startGoogleOAuth("/courses");
+    };
  
-    const handleGithubSignUp = async () => {
-        try {
-          await authClient.signIn.social({
-            provider: "github",
-            callbackURL: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/courses`,
-          });
-        } catch (error) {
-          console.log(error);
-        }
-      };
+    const handleGithubSignUp = () => {
+      startGithubOAuth("/courses");
+    };
 
     
     return (

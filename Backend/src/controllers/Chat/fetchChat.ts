@@ -6,19 +6,25 @@ import { prisma } from "../../lib/DB.js";
 // getChatController.ts
 export const getChat = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id as string;
-    const { courseId, videoId } = req.params ;
+    const userId = req.user?.userId;
+    const { videoId } = req.params as { courseId?: string; videoId?: string };
 
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
-    if(!videoId && !userId){
-        return res.status(400).json({
-            success: false,
-            message: "Please provide userId and videoId",
-        }); 
+    if (!videoId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide videoId",
+      });
     }
 
     const chat = await prisma.chatMessage.findUnique({
-      where: { userId_videoId: { userId: userId, videoId: videoId as string } },
+      where: { userId_videoId: { userId, videoId } },
     });
 
     return res.status(200).json({

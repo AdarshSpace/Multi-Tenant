@@ -1,7 +1,7 @@
 // routes/payment.routes.ts
 
 import express from "express";
-import { authentication } from "../middleware/authentication.js";
+import { requireAuth } from "../middleware/auth.js";
 import { createOrder} from "../controllers/Payments/Order.js";
 import { verifyPayment } from "../controllers/Payments/Verify_Payment.js";
 import {webhookHandler} from "../controllers/Payments/Webhook.js"
@@ -14,7 +14,7 @@ router.post("/webhook", express.raw({ type: "application/json" }), webhookHandle
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
-router.use(authentication);
+router.use(requireAuth);
 
 router.post("/create-order", createOrder);
 router.post("/verify", verifyPayment);

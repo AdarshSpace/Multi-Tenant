@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { authentication } from "../middleware/authentication.js";
+import { requireAuth } from "../middleware/auth.js";
 import { CheckSaved, GetSavedVideos, SaveVideo, UnsaveVideo } from "../controllers/Save/saveVideo.js";
 
 
 const router = Router();
 
-router.use(authentication);
+router.use(requireAuth);
 
 router.post("/save", SaveVideo);
 

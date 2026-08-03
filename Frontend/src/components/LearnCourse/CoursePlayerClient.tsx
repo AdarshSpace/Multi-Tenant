@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
 import { getChatHistory, sendChat } from "@/serverAction/learn";
+import { apiFetch } from "@/lib/api";
 
 import MuxPlayer from "@mux/mux-player-react";
 
@@ -180,11 +181,8 @@ export default function CoursePlayerClient({ courseId, initialCourseData, initia
 
     const checkSaved = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/saved/${activeLesson.id}/check`,
-          {
-            credentials: "include",
-          }
+        const res = await apiFetch(
+          `/api/saveVideo/saved/${activeLesson.id}/check`
         );
 
         const data = await res.json();
@@ -206,24 +204,19 @@ export default function CoursePlayerClient({ courseId, initialCourseData, initia
 
     try {
       if (isSaved) {
-        await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/saved/${activeLesson.id}`,
+        await apiFetch(
+          `/api/saveVideo/saved/${activeLesson.id}`,
           {
             method: "DELETE",
-            credentials: "include",
           }
         );
 
         setIsSaved(false);
       } else {
-        await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/save`,
+        await apiFetch(
+          `/api/saveVideo/save`,
           {
             method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
             body: JSON.stringify({
               videoId: activeLesson.id,
               courseId,

@@ -15,9 +15,15 @@ export const createOrder = async (req: Request, res: Response) => {
     console.log("Body :", req.body)
     const { courseId } = req.body;
    
-    const userId = req.user?.id as string
-    const  RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID
+    const userId = req.user?.userId;
+    const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     // 1. validate course
     const course = await prisma.course.findUnique({
@@ -78,6 +84,7 @@ export const createOrder = async (req: Request, res: Response) => {
 
         userId,
         courseId,
+        tenantId: course.tenantId,
       },
     });
 

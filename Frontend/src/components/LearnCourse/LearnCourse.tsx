@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
 import {getCourse, getChatHistory, sendChat} from '@/serverAction/learn';
+import { apiFetch } from "@/lib/api";
 
 import {
   Play, CheckCircle, Download, FileText, MessageSquare,
@@ -218,9 +219,8 @@ export default function CoursePlayerPage() {
     if (!activeLesson?.id) return;
     const checkSaved = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/saved/${activeLesson.id}/check`,
-          { credentials: "include" }
+        const res = await apiFetch(
+          `/api/saveVideo/saved/${activeLesson.id}/check`
         );
         const data = await res.json();
         setIsSaved(data.isSaved ?? false);
@@ -237,16 +237,13 @@ export default function CoursePlayerPage() {
     setSaveLoading(true);
     try {
       if (isSaved) {
-        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/saved/${activeLesson.id}`, {
+        await apiFetch(`/api/saveVideo/saved/${activeLesson.id}`, {
           method: "DELETE",
-          credentials: "include",
         });
         setIsSaved(false);
       } else {
-        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/save`, {
+        await apiFetch(`/api/saveVideo/save`, {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ videoId: activeLesson.id, courseId }),
         });
         setIsSaved(true);

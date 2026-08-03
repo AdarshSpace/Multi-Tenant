@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Upload, X, Video, FileText, Loader2,} from "lucide-react";
 import { upload } from "@imagekit/next"
+import { apiFetch } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,9 +58,7 @@ export const UploadCard = ({ closeUploadModal, addVideo, section, sections, cour
       if (notesFile) {
 
       // Ask backend for ImageKit auth
-        const authRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/video/auth`,{
-          credentials: "include",
-        });
+        const authRes = await apiFetch(`/api/video/auth`);
         const data = await authRes.json();
 
         const uploadedPdf = await upload({
@@ -83,11 +82,10 @@ export const UploadCard = ({ closeUploadModal, addVideo, section, sections, cour
 
     
               // STEP 1 → Get upload URL from backend
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/video/create`,
+    const response = await apiFetch(
+      `/api/video/create`,
       {
         method: "POST",
-        credentials: "include",
       }
     );
     console.log(response)
@@ -132,12 +130,8 @@ export const UploadCard = ({ closeUploadModal, addVideo, section, sections, cour
       };
    
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/course/update/${courseId}`, {
+      const response = await apiFetch(`/api/course/update/${courseId}`, {
               method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",          
-              },
-               credentials: "include",
               body: JSON.stringify(payload),
             });
             

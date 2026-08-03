@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth";
+import { login, startGithubOAuth, startGoogleOAuth } from "@/lib/auth";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -46,45 +46,23 @@ export default function LoginPage() {
         const { email, password } = data;
         try {
            setLoading(true);
-            const response = await authClient.signIn.email({
-                email: email,
-                password: password,
-               }
-            );
-            if (!response.data) {
-                console.log("Backend Error: ", response.error);
-                setError("root", { type: "server",  message: response.error.message || "Invalid email or password" });
-                return;
-            }
-                       
-
+            await login(email, password);
             router.push("/home");
         } catch (error) {
-            console.error(error);
+            setError("root", {
+              type: "server",
+              message: error instanceof Error ? error.message : "Invalid email or password",
+            });
         } finally {
           setLoading(false);
         }
     }
-    const handleGoogleLogin = async () => {
-        try {
-          await authClient.signIn.social({
-            provider: "google",
-            callbackURL: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/courses`,
-          });
-        } catch (error) {
-          console.log(error);
-        }
-      };
-    const handleGithubLogin = async () => {
-        try {
-          const response = await authClient.signIn.social({
-            provider: "github",
-            callbackURL:  `${process.env.NEXT_PUBLIC_FRONTEND_URL}/courses`,
-          });
-        } catch (error) {
-          console.log(error);
-        }
-      };
+    const handleGoogleLogin = () => {
+      startGoogleOAuth("/courses");
+    };
+    const handleGithubLogin = () => {
+      startGithubOAuth("/courses");
+    };
 
     return (
       <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center px-4 py-10">

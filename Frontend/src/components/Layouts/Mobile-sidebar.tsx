@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, X, Home, PlaySquare, Folder, Bookmark, GraduationCap, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { logout } from "@/lib/auth";
 
 export function MobileSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,12 +20,7 @@ export function MobileSidebar() {
 
   async function handleLogout() {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/sign-out`, {
-        method: "POST",
-        credentials: "include",
-      });
-      router.refresh();
-      router.replace("/login");
+      await logout();
     } catch (err) {
       console.error("Logout failed", err);
     } finally {

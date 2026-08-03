@@ -7,7 +7,8 @@ import ReactMarkdown from "react-markdown";
 
 import { getCourse, getChatHistory, sendChat } from '@/serverAction/learn';
 import { generateAssessment } from '@/serverAction/assessment';
-import { authClient } from "@/lib/auth";
+import { useSession } from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
 
 import { QuizTab } from "@/components/LearnCourse/QuizTab";
 import { AssignmentTab } from "@/components/LearnCourse/AssignmentTab";
@@ -41,7 +42,7 @@ export default function CoursePlayerPage() {
   const [playbackLoading, setPlaybackLoading] = useState(false);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
 
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSession();
   const [generateAssessmentLoading, setGenerateAssessmentLoading] = useState(false);
 
   // ── AI Chat State ──
@@ -229,9 +230,8 @@ export default function CoursePlayerPage() {
     if (!activeLesson?.id) return;
     const checkSaved = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/saved/${activeLesson.id}/check`,
-          { credentials: "include" }
+        const res = await apiFetch(
+          `/api/saveVideo/saved/${activeLesson.id}/check`
         );
         const data = await res.json();
         setIsSaved(data.isSaved ?? false);
@@ -248,16 +248,13 @@ export default function CoursePlayerPage() {
     setSaveLoading(true);
     try {
       if (isSaved) {
-        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/saved/${activeLesson.id}`, {
+        await apiFetch(`/api/saveVideo/saved/${activeLesson.id}`, {
           method: "DELETE",
-          credentials: "include",
         });
         setIsSaved(false);
       } else {
-        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/save`, {
+        await apiFetch(`/api/saveVideo/save`, {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ videoId: activeLesson.id, courseId }),
         });
         setIsSaved(true);
@@ -285,9 +282,8 @@ export default function CoursePlayerPage() {
     let cancelled = false;
     setPlaybackLoading(true);
 
-    fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/video/${activeLesson.id}/playback-token`,
-      { credentials: "include" }
+    apiFetch(
+      `/api/video/${activeLesson.id}/playback-token`
     )
       .then((res) => res.json())
       .then((data) => {

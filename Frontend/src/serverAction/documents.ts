@@ -1,31 +1,24 @@
-"use server"
+"use server";
 
-import { cookies } from "next/headers";
+import { authHeaders } from "@/lib/server-auth";
 
 export const allDocuments = async () => {
-    try{
-         const cookieStore = await cookies();
-            
-         // fetch user Documents
-         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/course/notes`, {
-           headers: {
-             cookie: cookieStore.toString(),
-           },
-           cache: "no-store",   
-         });
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/course/notes`, {
+      headers: await authHeaders(),
+      cache: "no-store",
+    });
 
-          const data = await res.json();
+    const data = await res.json();
 
-          if(!data.success){
-            console.error("Response Error : ", data.error);
-            return data.error;
-          }
-
-          return data;
-    }
-    catch(err){
-        console.log(err);
-        return null;
+    if (!data.success) {
+      console.error("Response Error : ", data.error);
+      return data.error;
     }
 
-}
+    return data;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+};

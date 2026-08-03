@@ -8,8 +8,12 @@ import type { ChatMessage } from "../../worker/Pdf/retriever.js"
 
 export const askAi = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id as string;
+    const userId = req.user?.userId;
     const { question, courseId, videoId } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
     // STEP-1: Find Existing Chat
     const existingChat = await prisma.chatMessage.findUnique({

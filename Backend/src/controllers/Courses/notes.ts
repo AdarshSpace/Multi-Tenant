@@ -3,7 +3,11 @@ import { prisma } from "../../lib/DB.js";
 
 
 export const GetNotes = async (req: Request, res: Response) => {
-  const userId = req.user?.id as string; // from your auth middleware
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
 
   // fetch only courses the user has purchased
   const purchases = await prisma.purchase.findMany({

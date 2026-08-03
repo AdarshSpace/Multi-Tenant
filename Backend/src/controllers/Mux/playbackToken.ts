@@ -25,7 +25,7 @@ function buildJwtParams(userId: string): Record<string, string> {
 
 export const handleGetPlaybackToken = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     const { videoId } = req.params;
 
     if (!userId) {
