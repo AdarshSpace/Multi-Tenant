@@ -18,9 +18,9 @@ model Tenant {
 
   // Identity
   name         String
-  slug         String   @unique
-  subdomain    String?  @unique
-  customDomain String?  @unique
+  slug         String  @unique
+  subdomain    String  @unique
+  customDomain String  @unique
 
   // Branding
   logo         String?

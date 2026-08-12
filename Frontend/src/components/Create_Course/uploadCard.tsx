@@ -28,13 +28,9 @@ type UploadCardProps = {
 export const UploadCard = ({ closeUploadModal, addVideo, section, sections, courseId  }: UploadCardProps) => {
 
   const [formData, setFormData] = useState({title: "", description: ""});
-
   const [videoFile, setVideoFile] = useState<File | null>(null);
-
   const [notesFile, setNotesFile] = useState<File | null>(null);
-
   const [isSubmittingVideo, setIsSubmittingVideo] = useState(false);
-
 
 
   const handleSubmit = async () => {
@@ -156,7 +152,6 @@ export const UploadCard = ({ closeUploadModal, addVideo, section, sections, cour
  } catch (error) {
 
       console.log(error);
-
       alert("Failed to upload video");
 
     } finally {

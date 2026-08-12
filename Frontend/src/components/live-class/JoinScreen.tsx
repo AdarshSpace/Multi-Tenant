@@ -10,6 +10,7 @@ interface JoinScreenProps {
   onJoinMeeting: (meetingId: string) => void;
   loading: boolean;
   error: string | null;
+  secureContext?: boolean;
 }
 
 export function JoinScreen({
@@ -19,6 +20,7 @@ export function JoinScreen({
   onJoinMeeting,
   loading,
   error,
+  secureContext = true,
 }: JoinScreenProps) {
   const [tab, setTab] = useState<"create" | "join">(isTeacher ? "create" : "join");
   const [title, setTitle] = useState("");
@@ -59,6 +61,18 @@ export function JoinScreen({
           </div>
 
           <div className="px-8 py-8 space-y-6">
+            {!secureContext && (
+              <div className="flex items-start gap-2.5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>
+                  Camera and microphone only work on{" "}
+                  <strong>http://localhost:3001</strong> or{" "}
+                  <strong>https://</strong>. Custom domains over plain HTTP
+                  (e.g. http://adarshspace.com) are blocked by the browser.
+                </span>
+              </div>
+            )}
+
             {/* Tab switcher */}
             {isTeacher && (
               <div className="flex bg-slate-100 rounded-xl p-1">

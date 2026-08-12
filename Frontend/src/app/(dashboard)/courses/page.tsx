@@ -3,7 +3,6 @@ import { Card } from "@/components/Card/card";
 import { getAllCourses } from "@/serverAction/allCourses";
 import AddCourseButton from "../../../components/Create_Course/AddCourseButton";
 
-
 type contentProps = {
   id: string;
   title: string;
@@ -20,17 +19,15 @@ type contentProps = {
   thumbnail: string;
   category: string;
   teacher: {
-      name: string;
+    name: string;
   };
-}
-
+};
 
 export default async function CoursesPage() {
-
   const data = await getAllCourses();
 
-  const content: contentProps[] = data.data 
-  const role = data.user.role;
+  const content: contentProps[] = data?.data ?? [];
+  const role = data?.user?.role ?? "STUDENT";
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -40,26 +37,24 @@ export default async function CoursesPage() {
             {role === "TEACHER" ? "Manage Courses" : "Explore Courses"}
           </h1>
           <p className="text-slate-500 mt-1">
-            {role === "TEACHER" ? "Create, edit, and manage your course catalogue." : "Find and enroll in your favorite courses."}
+            {role === "TEACHER"
+              ? "Create, edit, and manage your course catalogue."
+              : "Find and enroll in your favorite courses."}
           </p>
         </div>
-        
-        <div className="flex items-center gap-3">
 
-          {role === "TEACHER" && (
-            <AddCourseButton />
-          )}
+        <div className="flex items-center gap-3">
+          {role === "TEACHER" && <AddCourseButton />}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
-           {[...content]
-            .sort((a, b) => Number(b.paid) - Number(a.paid))
-            .map((course) => (
-              <Card key={course.id} course={course} role={role} isPurchased={course.paid} />
-            ))}
+        {[...content]
+          .sort((a, b) => Number(b.paid) - Number(a.paid))
+          .map((course) => (
+            <Card key={course.id} course={course} role={role} isPurchased={course.paid} />
+          ))}
       </div>
-     
     </div>
   );
 }

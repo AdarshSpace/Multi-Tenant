@@ -22,16 +22,29 @@ const DEV_ORIGINS = new Set([
     process.env.FRONTEND_URL as string,
     process.env.FRONTEND_URL_WWW as string,
     process.env.VERCEL_FRONTEND_URL as string,
-    "http://localhost:3001"
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
 ]);
+
+/** Browsers treat *.localhost as a secure context — used for multi-tenant local testing. */
+function isDevLocalhostOrigin(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === "localhost" || hostname.endsWith(".localhost");
+  } catch {
+    return false;
+  }
+}
 
 export const tenantCors = cors({
   origin: async (origin, callback) => {
     // same-origin requests / server-to-server (curl, Postman) have no Origin header
     if (!origin) return callback(null, true);
 
-    if (process.env.NODE_ENV !== "production" && DEV_ORIGINS.has(origin)) {
-      return callback(null, true);
+    if (process.env.NODE_ENV !== "production") {
+      if (DEV_ORIGINS.has(origin) || isDevLocalhostOrigin(origin)) {
+        return callback(null, true);
+      }
     }
 
     const host = extractHostFromOrigin(origin);

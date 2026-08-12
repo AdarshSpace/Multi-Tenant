@@ -2,20 +2,29 @@
 
 import { authHeaders } from "@/lib/server-auth";
 
-export const fetchUser = async () => {
+export type UserDetails = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  image: string | null;
+};
+
+export const fetchUser = async (): Promise<UserDetails | null> => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user/me`, {
       headers: await authHeaders(),
       cache: "no-store",
     });
+    console.log('res : ',res)
+    if (!res.ok) return null;
 
-    const { details } = await res.json();
+    const body = await res.json();
+    if (!body?.details) return null;
 
-    if (!details) throw new Error("Failed to fetch user");
-
-    return details;
+    return body.details as UserDetails;
   } catch (error) {
     console.log("Error fetching user details", error);
-    return error as Error;
+    return null;
   }
 };

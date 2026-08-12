@@ -25,7 +25,7 @@ export function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  function handleSend() {
+  async function handleSend() {
     const text = input.trim();
     if (!text) return;
     
@@ -36,9 +36,13 @@ export function Chat() {
       message: text,
       timestamp: Date.now(),
     };
-
-    publish(JSON.stringify(payload), { persist: true });
+    try{
+      await publish(JSON.stringify(payload), { persist: true });
     setInput("");
+    }
+    catch(error){
+      console.error("Failed to send chat message:", error);
+    }  
   }
 
   return (

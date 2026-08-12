@@ -1,10 +1,9 @@
 
 import type { Request, Response } from "express";
-import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../lib/DB.js";
 
-const router = Router();
+
 
 const createTenantSchema = z.object({
   name: z.string().min(2).max(100),
@@ -13,6 +12,18 @@ const createTenantSchema = z.object({
   phone: z.string().optional(),
   logo: z.string().url().optional(),
 });
+
+async function generateUniqueSubdomain(base: string): Promise<string> {
+    let candidate = base;
+    let suffix = 1;
+  
+    while (true) {
+      const existing = await prisma.tenant.findUnique({ where: { subdomain: candidate } });
+      if (!existing) return candidate;
+      suffix += 1;
+      candidate = `${base}-${suffix}`;
+    }
+  }
 
  export const tenantRegistration = async (req: Request, res: Response) => {
   const parsed = createTenantSchema.safeParse(req.body);
@@ -29,6 +40,14 @@ const createTenantSchema = z.object({
     .replace(/^www\./, "")
     .replace(/\/$/, "");
 
+  // e.g. "adarshspace.com" -> "adarshspace"
+  const rawLabel = cleanDomain.split(".")[0] ?? "";
+  const baseLabel = rawLabel.replace(/[^a-z0-9]/g, "") || "tenant";
+
+  // resolve a free subdomain: try the base label, then base-2, base-3, ...
+  const subdomain = await generateUniqueSubdomain(baseLabel);
+
+
   const existing = await prisma.tenant.findUnique({ where: { customDomain: cleanDomain } });
   if (existing) {
     return res.status(409).json({ error: "This domain is already registered" });
@@ -38,6 +57,7 @@ const createTenantSchema = z.object({
     data: {
       name,
       slug: cleanDomain.replace(/\./g, "-"), // internal identifier only, e.g. "motionkart-com"
+      subdomain,
       customDomain: cleanDomain,
       email: email ?? null,
       phone: phone ?? null,
@@ -53,5 +73,3 @@ const createTenantSchema = z.object({
     dnsInstructions: `Please point an A record for ${cleanDomain} to <YOUR_SERVER_IP>`,
   });
 };
-
-export default router;

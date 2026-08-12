@@ -122,6 +122,8 @@ export async function createIndependentMeeting(
       return;
     }
 
+    console.log("user : ", user);
+
     const parsed = createIndependentMeetingSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid request body", details: parsed.error.flatten() });
@@ -137,6 +139,9 @@ export async function createIndependentMeeting(
       res.status(400).json({ error: "Invalid scheduledAt date format" });
       return;
     }
+    
+    console.log("user Role : ", user.role);
+
     if (user.role !== "TEACHER") {
       res.status(403).json({ error: "Only teachers can start a live meeting" });
       return;

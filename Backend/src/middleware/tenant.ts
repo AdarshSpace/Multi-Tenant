@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { prisma } from "../lib/DB.js";
 import { extractHostFromOrigin, getTenantIdForDomain } from "../controllers/auth/TenantCache.js";
 
 // dev-only: map fake local hostnames straight to a tenant id via env,
@@ -6,7 +7,31 @@ import { extractHostFromOrigin, getTenantIdForDomain } from "../controllers/auth
 const DEV_HOST_OVERRIDES: Record<string, string | undefined> = {
   "tenant1.local:3000": process.env.DEV_TENANT_1_ID,
   "tenant2.local:3000": process.env.DEV_TENANT_2_ID,
+  "adarshspace.localhost:3001": process.env.DEV_TENANT_1_ID,
+  "adarshspace.localhost": process.env.DEV_TENANT_1_ID,
 };
+
+async function resolveDevLocalhostTenant(host: string): Promise<string | undefined> {
+  // http://adarshspace.localhost:3001 -> host "adarshspace.localhost"
+  if (host !== "localhost" && !host.endsWith(".localhost")) return undefined;
+
+  const label = host === "localhost" ? undefined : host.slice(0, -".localhost".length);
+  if (!label) return undefined;
+
+  const tenant = await prisma.tenant.findFirst({
+    where: {
+      OR: [
+        { subdomain: label },
+        { customDomain: host },
+        { customDomain: `${label}.com` },
+        { slug: label },
+      ],
+    },
+    select: { id: true },
+  });
+
+  return tenant?.id;
+}
 
 // Use on every /api/auth/* route (and any tenant-scoped data route).
 export async function resolveTenant(req: Request, res: Response, next: NextFunction) {
@@ -18,6 +43,15 @@ export async function resolveTenant(req: Request, res: Response, next: NextFunct
     if (devTenantId) {
       req.tenantId = devTenantId;
       return next();
+    }
+
+    const host = extractHostFromOrigin(origin);
+    if (host) {
+      const localhostTenantId = await resolveDevLocalhostTenant(host);
+      if (localhostTenantId) {
+        req.tenantId = localhostTenantId;
+        return next();
+      }
     }
   }
 

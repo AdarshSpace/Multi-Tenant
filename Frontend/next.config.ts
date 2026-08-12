@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    "adarshspace.com",
+    "adarshspace.localhost",
+    "teacher1.com",
+    "onlinehometution.com",
+  ],
+  reactStrictMode: false,
   images: {
     remotePatterns: [
       {

@@ -12,9 +12,7 @@ export interface CreateIndependentMeetingResponse {
   status: "LIVE" | "SCHEDULED";
 }
 
-export async function createIndependentMeeting(
-  payload: CreateIndependentMeetingPayload
-): Promise<CreateIndependentMeetingResponse> {
+export async function createIndependentMeeting(payload: CreateIndependentMeetingPayload): Promise<CreateIndependentMeetingResponse> {
   const res = await apiFetch("/api/live/independent/create", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -34,9 +32,7 @@ export interface GetTokenResponse {
   roomId: string;
 }
 
-export async function getLiveClassToken(
-  liveMeetingId: string
-): Promise<GetTokenResponse> {
+export async function getLiveClassToken( liveMeetingId: string): Promise<GetTokenResponse> {
   const res = await apiFetch(`/api/live/class/${liveMeetingId}/token`, {
     method: "GET",
   });
