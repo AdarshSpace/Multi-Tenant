@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
 const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET as string;
-const ACCESS_TOKEN_TTL = "15m";
+const ACCESS_TOKEN_TTL = "58m";
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export type AccessTokenPayload = {

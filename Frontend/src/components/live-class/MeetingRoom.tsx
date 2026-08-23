@@ -1,19 +1,22 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMeeting } from "@videosdk.live/react-sdk";
-import { ParticipantView } from "@/components/live-class/ParticipantView";
-import { Controls } from "@/components/live-class/Controls";
+import { MeetingGrid } from "@/components/live-class/MeetingGrid";
+import { Controls, type SidePanel } from "@/components/live-class/Controls";
 import { Chat } from "@/components/live-class/Chat";
 import { Poll } from "@/components/live-class/Poll";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { AlertCircle, Video } from "lucide-react";
+  AlertCircle,
+  Shield,
+  Users,
+  MoreVertical,
+  MessageSquare,
+  BarChart2,
+  X,
+} from "lucide-react";
 import { endLiveClass } from "@/lib/liveClass.api";
+import { participantActivityStore } from "@/lib/Participantactivitystore";
 
 interface MeetingRoomProps {
   liveMeetingId: string;
@@ -39,10 +42,13 @@ function mediaErrorMessage(error: unknown): string {
     name === "ERROR_CAMERA_ACCESS_UNAVAILABLE" ||
     message.toLowerCase().includes("secure website")
   ) {
-    return "Camera/mic need a secure page. Open the app on http://localhost:3001 or via https:// (custom HTTP domains block media).";
+    return "Camera/mic need a secure page. Open the app on http://localhost:3001 or via https://.";
   }
-  if (name.includes("PRODUCE_FAILED") || message.includes("could not be published")) {
-    return "Media track was created but could not be published. Check network/firewall, then toggle cam/mic again.";
+  if (
+    name.includes("PRODUCE_FAILED") ||
+    message.includes("could not be published")
+  ) {
+    return "Media track was created but could not be published. Try toggling cam/mic again.";
   }
   return message;
 }
@@ -58,19 +64,36 @@ export function MeetingRoom({
   const [mediaError, setMediaError] = useState<string | null>(
     secureContext
       ? null
-      : "Camera/mic blocked: this page is not a secure context. Use http://localhost:3001 or https://."
+      : "Camera/mic blocked: this page is not a secure context."
   );
 
-  const { participants, leave, enableWebcam, unmuteMic } = useMeeting({
+  const [secondsElapsed, setSecondsElapsed] = useState(0);
+  const [sidePanel, setSidePanel] = useState<SidePanel>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSecondsElapsed((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTimer = (totalSeconds: number) => {
+    const hrs = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+  };
+
+  const { participants, leave, enableWebcam, unmuteMic, localParticipant, presenterId,} = useMeeting({
     onMeetingLeft,
     onMeetingJoined: () => {
       if (mediaEnabledRef.current) return;
       mediaEnabledRef.current = true;
 
-      // Browsers block getUserMedia on http://custom-domain (non-localhost).
       if (!secureContext || !window.isSecureContext) {
         setMediaError(
-          "Camera/mic blocked: this page is not a secure context. Use http://localhost:3001 or https://."
+          "Camera/mic blocked: this page is not a secure context."
         );
         return;
       }
@@ -94,9 +117,16 @@ export function MeetingRoom({
       console.warn("VideoSDK meeting error:", error);
       setMediaError(mediaErrorMessage(error));
     },
+    onSpeakerChanged: (activeSpeakerId: string | null) => {
+      participantActivityStore.setActiveSpeaker(activeSpeakerId);
+    },
   });
 
   const participantIds = [...participants.keys()];
+
+  function handleTogglePanel(panel: "chat" | "polls") {
+    setSidePanel((prev) => (prev === panel ? null : panel));
+  }
 
   async function handleLeave() {
     if (isTeacher) {
@@ -110,86 +140,122 @@ export function MeetingRoom({
   }
 
   return (
-    <div className="animate-in fade-in duration-500">
+    // Fit viewport under dashboard header/sidebar — no page scroll
+    <div className="w-full h-[calc(100dvh-7.5rem)] md:h-[calc(100dvh-8.5rem)] flex flex-col overflow-hidden animate-in fade-in duration-300">
       {mediaError && (
-        <div className="mb-4 flex items-start gap-2.5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm font-medium">
-          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>{mediaError}</span>
+        <div className="mb-2 flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-medium shrink-0">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <span className="line-clamp-2">{mediaError}</span>
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-wide">
-              Live
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-1.5 bg-[#E11D48] text-white px-2 py-0.5 rounded-md shadow-sm shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">
+              LIVE
             </span>
           </div>
-          <h2 className="font-bold text-slate-800 text-lg">{meetingTitle}</h2>
+          <h2 className="font-bold text-slate-900 text-base sm:text-lg truncate">
+            {meetingTitle || "Live Class"}
+          </h2>
         </div>
-        <span className="text-sm text-slate-400 font-medium">
-          {participantIds.length} participant
-          {participantIds.length !== 1 ? "s" : ""}
-        </span>
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-semibold shadow-sm">
+            <Users className="w-3.5 h-3.5 text-slate-500" />
+            <span>{participantIds.length}</span>
+          </div>
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold shadow-sm">
+            <Shield className="w-3.5 h-3.5 text-slate-500" />
+            <span>{formatTimer(secondsElapsed)}</span>
+          </div>
+          <button
+            type="button"
+            className="p-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg shadow-sm cursor-pointer"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
-        <div className="flex flex-col gap-4">
-          <div
-            className={`grid gap-3 ${
-              participantIds.length <= 1
-                ? "grid-cols-1"
-                : participantIds.length <= 4
-                  ? "grid-cols-2"
-                  : "grid-cols-3"
-            }`}
-          >
-            {participantIds.map((id) => (
-              <ParticipantView key={id} participantId={id} />
-            ))}
-            {participantIds.length === 0 && (
-              <div className="aspect-video bg-slate-800 rounded-2xl flex items-center justify-center">
-                <div className="text-center text-white/50">
-                  <Video className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm font-medium">
-                    Waiting for participants…
-                  </p>
-                </div>
-              </div>
-            )}
+      <div
+        className={`flex-1 min-h-0 grid gap-3 ${
+          sidePanel
+            ? "grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px]"
+            : "grid-cols-1"
+        }`}
+      >
+        <div className="bg-[#0F172A] border border-slate-800 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 flex flex-col min-h-0 overflow-hidden shadow-xl">
+          <div className="flex-1 min-h-0 w-full">
+            <MeetingGrid
+              participantIds={participantIds}
+              localParticipantId={localParticipant?.id}
+              presenterId={presenterId}
+            />
           </div>
 
-          <Controls isTeacher={isTeacher} onLeave={handleLeave} />
+          <div className="mt-2.5 sm:mt-3 shrink-0">
+            <Controls
+              isTeacher={isTeacher}
+              onLeave={handleLeave}
+              sidePanel={sidePanel}
+              onTogglePanel={handleTogglePanel}
+            />
+          </div>
         </div>
 
-        <div className="h-[600px] lg:h-auto lg:min-h-[520px]">
-          <Tabs
-            defaultValue="chat"
-            className="w-full flex flex-col h-full bg-slate-50 border border-gray-200 rounded-2xl overflow-hidden"
-          >
-            <TabsList className="bg-slate-100 p-1 rounded-t-2xl flex border-b border-slate-200 justify-start overflow-x-auto no-scrollbar shrink-0 z-20 relative">
-              <TabsTrigger
-                value="chat"
-                className="rounded-xl px-6 py-2 text-xs font-bold tracking-tight data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-slate-900 text-slate-500 transition-all cursor-pointer flex-1"
-              >
-                Chat
-              </TabsTrigger>
-              <TabsTrigger
-                value="polls"
-                className="rounded-xl px-6 py-2 text-xs font-bold tracking-tight data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-slate-900 text-slate-500 transition-all cursor-pointer flex-1"
-              >
-                Polls
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="chat" className="mt-0 flex-1 min-h-0">
-              <Chat />
-            </TabsContent>
-            <TabsContent value="polls" className="mt-0 flex-1 min-h-0">
-              <Poll />
-            </TabsContent>
-          </Tabs>
-        </div>
+        {sidePanel && (
+          <div className="min-h-0 h-full max-h-full flex flex-col animate-in slide-in-from-right-2 fade-in duration-200">
+            <div className="w-full flex flex-col h-full max-h-[min(100%,560px)] lg:max-h-none bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+              <div className="flex items-center justify-between gap-2 px-2.5 py-2 bg-slate-50 border-b border-slate-200 shrink-0">
+                <div className="flex bg-slate-100 rounded-lg p-0.5 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => setSidePanel("chat")}
+                    className={`flex-1 rounded-md px-2 py-1.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      sidePanel === "chat"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    Chat
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSidePanel("polls")}
+                    className={`flex-1 rounded-md px-2 py-1.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      sidePanel === "polls"
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    <BarChart2 className="w-3.5 h-3.5" />
+                    Polls
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSidePanel(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 min-h-0 overflow-hidden">
+                {sidePanel === "chat" ? (
+                  <Chat embedded />
+                ) : (
+                  <Poll isTeacher={isTeacher} embedded />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
