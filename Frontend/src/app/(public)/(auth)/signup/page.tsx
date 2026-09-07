@@ -192,7 +192,7 @@ export default function SignupPage() {
             </div>
   
             {/* Social Signup */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-2 gap-4">
               <button 
               onClick={handleGoogleSignUp}
               className="h-12 rounded-2xl border border-slate-200 hover:bg-[#0039a6]/5 font-medium text-slate-800 transition">
@@ -203,7 +203,7 @@ export default function SignupPage() {
               className="h-12 rounded-2xl border border-slate-200 hover:bg-[#0039a6]/5 font-medium text-slate-800 transition">
                 GitHub
               </button>
-            </div>
+            </div> */}
   
             {/* Sign In */}
             <p className="text-center text-sm text-slate-500 mt-8">

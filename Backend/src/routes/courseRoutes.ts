@@ -9,6 +9,7 @@ import { GetNotes } from "../controllers/Courses/notes.js";
 
 
 const router = Router();
+//router.get("/getAll", getCourses);
 
 // Apply authentication middleware to all routes below
 router.use(requireAuth);

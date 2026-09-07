@@ -312,3 +312,64 @@ export async function endLiveClass(
     next(error);
   }
 }
+
+/**
+ * GET /api/live/classes
+ * Fetch all active and scheduled live classes for the current tenant.
+ */
+export async function getTenantLiveClasses(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const tenantId = user.tenantId;
+
+    const liveMeetings = await prisma.liveMeeting.findMany({
+      where: {
+        tenantId: tenantId,
+        status: { in: ["LIVE", "SCHEDULED"] },
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        scheduledAt: true,
+        startedAt: true,
+        createdAt: true,
+        teacher: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    console.log("Live Meeting : ", liveMeetings);
+
+    // Ensure LIVE classes appear first, followed by SCHEDULED/upcoming classes (most recent first)
+    const statusPriority: Record<string, number> = { LIVE: 1, SCHEDULED: 2 };
+    liveMeetings.sort((a, b) => {
+      const priorityA = statusPriority[a.status] ?? 99;
+      const priorityB = statusPriority[b.status] ?? 99;
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    res.status(200).json({ liveMeetings });
+  } catch (error) {
+    next(error);
+  }
+}

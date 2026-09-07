@@ -53,6 +53,7 @@ export const getCourses = async (req: Request, res: Response) => {
       id: dbUser.id,
     };
 
+    console.log("formattedCourses : ",formattedCourses)
     return res.status(200).json({
       success: true,
       data: formattedCourses,

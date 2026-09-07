@@ -13,7 +13,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     const payload = verifyAccessToken(token);
 
     req.user = payload;
-    console.log(req.user);
+
     next();
   } catch {
     // expired or invalid -> frontend should call /api/auth/refresh and retry

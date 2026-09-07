@@ -45,22 +45,14 @@ export default function LiveClassClient() {
     setLoading(true);
     setError(null);
     try {
-      const { liveMeetingId } = await createIndependentMeeting({
+      await createIndependentMeeting({
         title,
         description: description || undefined,
       });
-      const { token, roomId } = await getLiveClassToken(liveMeetingId);
-      console.log("token : ", token,  "roomId : ", roomId);
-      setMeetingTitle(title);
-      setPageState({
-        stage: "meeting",
-        token,
-        roomId,
-        liveMeetingId,
-        isTeacher: true,
-      });
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      setError(msg);
+      throw new Error(msg);
     } finally {
       setLoading(false);
     }
@@ -76,7 +68,7 @@ export default function LiveClassClient() {
         token,
         roomId,
         liveMeetingId,
-        isTeacher: false,
+        isTeacher: isTeacher,
       });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong");
@@ -84,6 +76,7 @@ export default function LiveClassClient() {
       setLoading(false);
     }
   }
+
 
   function handleMeetingLeft() {
     setPageState({ stage: "ended" });

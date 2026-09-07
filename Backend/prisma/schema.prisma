@@ -9,27 +9,22 @@ datasource db {
 }
 
 
-// ============================================================
-// TENANT
-// ============================================================
-
 model Tenant {
   id           String   @id @default(cuid())
 
-  // Identity
   name         String
   slug         String  @unique
   subdomain    String  @unique
   customDomain String  @unique
 
-  // Branding
   logo         String?
-
-  // Contact
   email        String?
   phone        String?
 
   // Status — false until DNS is verified for customDomain
+  verified     Boolean  @default(false)
+
+  // Is this tenant allowed to use the platform?
   isActive     Boolean  @default(true)
 
   // Relations
@@ -44,7 +39,7 @@ model Tenant {
 }
 
 // ============================================================
-// AUTH — custom JWT + DB-session based (no better-auth)
+// AUTH — custom JWT + DB-session based 
 // ============================================================
 
 enum Role {
@@ -139,9 +134,6 @@ model OAuthHandoff {
   @@map("oauth_handoff")
 }
 
-// ============================================================
-// COURSES
-// ============================================================
 
 
 model Course {
@@ -184,13 +176,6 @@ model Course {
   @@map("courses")
 }
 
-// ============================================================
-// NOTE: Module, Purchase, Payment, CourseProgress, VideoProgress,
-// ChatMessage, SavedVideo, LiveMeeting, StudentQuizResponse models
-// already exist in your current schema file — keep them exactly
-// as they are, just make sure they still point to User/Course/Tenant
-// the same way (no field renames needed on their side).
-// ============================================================
 
 
 model Module {

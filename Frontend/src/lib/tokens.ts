@@ -1,7 +1,7 @@
 const ACCESS_TOKEN_KEY = "mk_access_token";
 const REFRESH_TOKEN_KEY = "mk_refresh_token";
 
-const ACCESS_MAX_AGE = 60 * 15; // 15 minutes
+const ACCESS_MAX_AGE = 60 * 60 * 24 * 3; // 3 days
 const REFRESH_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 function isBrowser() {

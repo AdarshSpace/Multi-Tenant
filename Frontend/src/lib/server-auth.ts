@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { TOKEN_COOKIE_NAMES } from "./tokens";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-const ACCESS_MAX_AGE = 60 * 15;
+const ACCESS_MAX_AGE = 60 * 60 * 24 * 3; // 3 days
 const REFRESH_MAX_AGE = 60 * 60 * 24 * 30;
 
 async function persistTokens(accessToken: string, refreshToken: string) {

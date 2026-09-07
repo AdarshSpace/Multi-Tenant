@@ -144,7 +144,7 @@ export default function LoginPage() {
             </div>
   
             {/* Social Login */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-2 gap-4">
               <button 
                onClick={handleGoogleLogin}
                className="h-12 rounded-2xl border border-slate-200 hover:bg-[#0039a6]/5 font-medium text-slate-800 transition">
@@ -155,7 +155,7 @@ export default function LoginPage() {
               className="h-12 rounded-2xl border border-slate-200 hover:bg-[#0039a6]/5 font-medium text-slate-800 transition">
                 GitHub
               </button>
-            </div>
+            </div> */}
   
             {/* Signup Link */}
             <p className="text-center text-sm text-slate-500 mt-8">

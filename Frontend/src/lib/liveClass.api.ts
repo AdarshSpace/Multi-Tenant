@@ -57,3 +57,35 @@ export async function endLiveClass(liveMeetingId: string): Promise<void> {
     throw new Error(data.error || "Failed to end meeting");
   }
 }
+
+export interface LiveClassItem {
+  id: string;
+  title: string;
+  description?: string | null;
+  status: "LIVE" | "SCHEDULED" | "ENDED";
+  scheduledAt?: string | null;
+  startedAt?: string | null;
+  createdAt: string;
+  teacher?: {
+    id: string;
+    name: string;
+    email: string;
+    image?: string | null;
+  };
+}
+
+export async function getTenantLiveClasses(): Promise<LiveClassItem[]> {
+  const res = await apiFetch("/api/live/classes", {
+    method: "GET",
+  });
+
+  const data = await res.json();
+  console.log("dATA : ", data)
+
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to fetch live classes");
+  }
+
+  return data.liveMeetings as LiveClassItem[];
+}
+
