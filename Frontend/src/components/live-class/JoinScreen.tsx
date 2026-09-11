@@ -27,7 +27,8 @@ interface JoinScreenProps {
   secureContext?: boolean;
 }
 
-export function JoinScreen({
+export function 
+JoinScreen({
   isTeacher,
   userName,
   onCreateMeeting,

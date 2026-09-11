@@ -6,9 +6,7 @@ export const getAllSavedVideos = async () => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/saveVideo/saved`, {
       headers: await authHeaders(),
-      next: {
-        revalidate: 300,
-      },
+      cache: "no-store",
     });
 
     const data = await res.json();
