@@ -24,10 +24,19 @@ type contentProps = {
 };
 
 export default async function CoursesPage() {
+
+  const apiStart = performance.now();
   const data = await getAllCourses();
+  const apiEnd = performance.now();
+
+  console.log(
+    `🌐 API time getAllCourses : ${(apiEnd - apiStart).toFixed(2)} ms`
+  );
 
   const content: contentProps[] = data?.data ?? [];
   const role = data?.user?.role ?? "STUDENT";
+
+  const dataStart = performance.now();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -56,5 +65,10 @@ export default async function CoursesPage() {
           ))}
       </div>
     </div>
+  );
+  const endTime = performance.now();
+
+  console.log(
+    `🌐 CoursesPage execution time: ${(endTime - dataStart).toFixed(2)} ms`
   );
 }

@@ -18,15 +18,27 @@ interface CourseNotes {
 
 export default async function NotesPage() {
 
+  const apiStart = performance.now();
+
   const { data } = await allDocuments();
 
+  const apiEnd = performance.now();
+
+  console.log(
+    `🌐 API time allDocuments : ${(apiEnd - apiStart).toFixed(2)} ms`
+  );
+
   const courses: CourseNotes[] = data;
+
+
 
   // total notes count
   const totalNotes = courses.reduce(
     (acc, c) => acc + c.notes.length,
     0
   );
+
+  const DocumentsStart = performance.now();
 
   return (
     <div className="bg-white rounded-3xl p-8 animate-in fade-in duration-500">
@@ -164,5 +176,10 @@ export default async function NotesPage() {
         </div>
       )}
     </div>
+  );
+  const endTime = performance.now();
+
+  console.log(
+    `🌐 DocumentsPage execution time: ${(endTime - DocumentsStart).toFixed(2)} ms`
   );
 }

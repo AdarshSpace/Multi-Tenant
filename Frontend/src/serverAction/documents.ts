@@ -6,7 +6,9 @@ export const allDocuments = async () => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/course/notes`, {
       headers: await authHeaders(),
-      cache: "no-store",
+      next: {
+        revalidate: 300,
+      },
     });
 
     const data = await res.json();

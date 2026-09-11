@@ -1,6 +1,7 @@
 import { HeroSection, AnimationTechniques, MotionDesignFrameworks, RightSidebar, IndustrySnapshot } from "../../../components/dashboard/DashboardContent";
 
 export default function HomePage() {
+  const startTime = performance.now();
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -16,5 +17,10 @@ export default function HomePage() {
         </div>
       </div>
     </>
+  );
+  const endTime = performance.now();
+
+  console.log(
+    `🏠 HomePage execution time: ${(endTime - startTime).toFixed(2)} ms`
   );
 }

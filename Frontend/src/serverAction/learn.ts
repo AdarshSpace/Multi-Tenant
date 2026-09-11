@@ -8,7 +8,9 @@ export const getCourse = async (courseId: string) => {
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/course/${courseId}/curriculum`,
       {
         headers: await authHeaders(),
-        cache: "no-store",
+        next: {
+          revalidate: 300,
+        },
       }
     );
 

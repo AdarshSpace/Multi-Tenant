@@ -7,7 +7,9 @@ export const getAllCourses = async () => {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/course/getAll`, {
       headers: await authHeaders(),
-      cache: "no-store",
+      next: {
+        revalidate: 3600,
+      },
     });
 
     const data = await response.json();

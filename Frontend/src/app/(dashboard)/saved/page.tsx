@@ -18,8 +18,18 @@ interface SavedVideo {
 
 export default async function SavedVideosPage() {
 
+  const apiStart = performance.now();
+
   const { data } = await getAllSavedVideos();
 
+  const apiEnd = performance.now();
+
+  console.log(
+    `🌐 API time getAllSavedVideos : ${(apiEnd - apiStart).toFixed(2)} ms`
+  );
+
+  const dataStart = performance.now();
+  
   const savedVideos: SavedVideo[] = data;
 
   return (
@@ -63,5 +73,10 @@ export default async function SavedVideosPage() {
 
       )}
     </div>
+  );
+  const endTime = performance.now();
+
+  console.log(
+    `🌐 SavedVideosPage execution time: ${(endTime - dataStart).toFixed(2)} ms`
   );
 }

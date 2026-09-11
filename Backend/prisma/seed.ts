@@ -1,7 +1,8 @@
 import { prisma } from "../src/lib/DB";
 
 async function main() {
-  await prisma.tenant.upsert({
+   // Adarsh Space
+   await prisma.tenant.upsert({
     where: {
       customDomain: "adarshspace.com",
     },
@@ -11,6 +12,21 @@ async function main() {
       subdomain: "adarshspace",
       slug: "adarshspace-com",
       customDomain: "adarshspace.com",
+      isActive: true,
+    },
+  });
+
+  // MotionKart
+  await prisma.tenant.upsert({
+    where: {
+      customDomain: "motionkart.online",
+    },
+    update: {},
+    create: {
+      name: "MotionKart",
+      subdomain: "motionkart",
+      slug: "motionkart-online",
+      customDomain: "motionkart.online",
       isActive: true,
     },
   });
