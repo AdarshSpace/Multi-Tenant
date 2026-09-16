@@ -1,72 +1,111 @@
 <div align="center">
 
-<img src="https://www.motionkart.online/favicon.ico" width="60" alt="MotionKart Logo" />
-
 # MotionKart
 
-### The #1 Platform for Motion Designers
+### Multi-Tenant Learning Management System
 
-**Learn Blender & After Effects the right way.**  
-A full-stack LMS with AI-powered doubt solving, Razorpay payments, and a seamless learning experience.
+**A complete LMS platform for teachers and coaching institutes to create, manage, and deliver online education — with recorded courses, live classes, AI-powered learning, and integrated payments.**
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-motionkart.online-0F6E56?style=for-the-badge)](https://www.motionkart.online)
-[![Demo Video](https://img.shields.io/badge/▶_Demo_Video-YouTube-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/3mFDyCkzLz0?si=116Dc-6ly5ggJEAv)
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/AdarshSpace/motionkart)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![Razorpay](https://img.shields.io/badge/Payments-Razorpay-072654?style=for-the-badge)](https://razorpay.com)
+<br />
 
-> Built solo. Shipped to production. Trusted by 5,000+ students.
+[**🌐 Live Project**](https://www.motionkart.online/)   •  
+[**▶️ 5-Minute Demo**](https://youtu.be/vVvcEUXUhvo)   •  
+[**💻 GitHub Repository**](https://github.com/AdarshSpace/Multi-Tenant)
+
+<br />
+
+**Next.js · TypeScript · Node.js · Express · MySQL · Prisma · AWS**
+
+<br />
+
+`🤖 AI / RAG`   `🔴 Live Classes`   `🎥 Video Streaming`   `💳 Payments`   `🏢 Multi-Tenant`
+
+<br /><br />
+
+> **Built solo · Shipped to production**
 
 </div>
 
 ---
 
+
+---
+
 ## 📺 Demo
 
-[![MotionKart Demo](https://img.youtube.com/vi/3mFDyCkzLz0/maxresdefault.jpg)](https://youtu.be/3mFDyCkzLz0?si=116Dc-6ly5ggJEAv)
+[![MotionKart Demo](https://img.youtube.com/vi/vVvcEUXUhvo/maxresdefault.jpg)](https://youtu.be/vVvcEUXUhvo)
 
 ---
 
 ## ✨ What is MotionKart?
 
-MotionKart is a **production-grade Learning Management System** built for motion designers — students who want to master Blender and After Effects through structured, high-quality courses. It's not just a course website; it's a complete learning ecosystem with real-time AI doubt solving, locked content gating behind payments, downloadable PDF notes, and a personalized saved-video library.
+MotionKart is a **production-grade multi-tenant Learning Management System** built for teachers, educators, and coaching institutes. Each tenant can have its own domain, courses, students, branding, and learning experience while sharing the same underlying platform.
+
+It provides a complete learning ecosystem with AI-powered doubt solving, locked content gating behind payments, downloadable PDF notes, recorded video lessons, live classes, and a personalized saved-video library.
+
 
 ---
 
 ## 🚀 Features
 
+### 🏢 Multi-Tenancy
+
+* Multiple teachers and coaching institutes can use the same platform
+* Custom domain support for individual tenants
+* Tenant-specific landing pages, courses, students, and dashboards
+* Tenant-aware data isolation across users, courses, purchases, payments, and live classes
+
 ### 🔐 Authentication
-- Email/password login with secure sessions via **Better Auth**
-- **Google OAuth** and **GitHub OAuth** — one-click sign-in
-- Protected routes and role-based access control
+
+* Custom **JWT session-based authentication** with short-lived access tokens and refresh-token sessions
+* Secure HTTP-only refresh-token cookies
+* Protected routes and role-based authorization
+* Tenant-aware authentication and authorization
 
 ### 📚 Course Catalogue
-- Browse courses with thumbnails, star ratings, and enrolled student count
-- Original vs discounted pricing displayed on each card
+
+* Browse courses with thumbnails, pricing, and course details
+* Original vs discounted pricing displayed on each card
+* Tenant-specific course catalogue
 
 ### 💳 Payments — Razorpay
-- Secure Razorpay checkout — course unlocks **immediately** after payment
-- No manual activation needed — fully automated via webhooks
+
+* Secure Razorpay checkout — course unlocks **immediately** after payment
+* No manual activation needed — fully automated via payment verification and webhooks
+* Tenant-aware payment and purchase records
 
 ### 🤖 AI Doubt Solver
-- Ask questions about any lesson directly on the learn page
-- Answers grounded in **actual course PDFs** via RAG — not generic AI responses
-- Powered by **Gemini + LangChain + Pinecone**
+
+* Ask questions about any lesson directly on the learn page
+* Answers grounded in **actual course PDFs** via RAG — not generic AI responses
+* Powered by **Gemini + LangChain + Pinecone**
 
 ### 📄 Documents
-- View all downloadable PDF notes in one place
-- **Smart gating** — only PDFs from purchased courses are accessible
+
+* View all downloadable PDF notes in one place
+* **Smart gating** — only PDFs from purchased courses are accessible
+* Tenant-aware document access
 
 ### 🔖 Saved Videos
-- Bookmark any lesson with a single click
-- Revisit saved videos from the sidebar as a personal revision playlist
+
+* Bookmark any lesson with a single click
+* Revisit saved videos from the sidebar as a personal revision playlist
+
+### 🔴 Live Classes — VideoSDK
+
+* Teachers can create and schedule live classes
+* Real-time video and audio communication
+* Real-time chat between teachers and students
+* Screen sharing
+* Polls for live student interaction
+* Microphone and camera support
+* Students can join live classes with one click
 
 ---
 
 ## 🤖 How the AI Doubt Solver Works
 
-```
+```text
 Student question → Embed question → Vector search (Pinecone) → Retrieve course chunks → Gemini generates answer
 ```
 
@@ -76,17 +115,18 @@ Answers are grounded in the actual course material — significantly more accura
 
 ## 🛠️ Tech Stack
 
-| Layer | Technologies |
-|---|---|
-| **Frontend** | Next.js 16, React 19, TypeScript, Tailwind CSS 4, Shadcn UI, Mux Player |
-| **Backend** | Node.js, Express 5, TypeScript, Prisma, MySQL |
-| **Auth** | Better Auth (Email, Google, GitHub OAuth) |
-| **Payments** | Razorpay |
-| **Video** | Mux (hosting + streaming) |
-| **AI / RAG** | Google Gemini, LangChain, Pinecone |
-| **Queue** | Redis + BullMQ (PDF processing) |
-| **Files** | ImageKit |
-| **Deployment** | Vercel |
+| Layer            | Technologies                                                |
+| ---------------- | ----------------------------------------------------------- |
+| **Frontend**     | Next.js 16, React 19, TypeScript, Tailwind CSS 4, Shadcn UI |
+| **Backend**      | Node.js, Express 5, TypeScript, Prisma, MySQL               |
+| **Auth**         | JWT Session-based Authentication                            |
+| **Payments**     | Razorpay                                                    |
+| **Video**        | Mux (hosting + streaming)                                   |
+| **Live Classes** | VideoSDK                                                    |
+| **AI / RAG**     | Google Gemini, LangChain, Pinecone                          |
+| **Queue**        | Redis + BullMQ (PDF processing)                             |
+| **Files**        | ImageKit                                                    |
+| **Deployment**   | Vercel, AWS EC2, AWS RDS                                    |
 
 ---
 
@@ -95,17 +135,22 @@ Answers are grounded in the actual course material — significantly more accura
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/AdarshSpace/motionkart.git
-cd motionkart
+git clone https://github.com/AdarshSpace/Multi-Tenant.git
+
+cd Multi-Tenant
 ```
 
 ### 2. Backend setup
 
 ```bash
 cd Backend
+
 npm install
+
 cp .env.example .env   # fill in all values
+
 npx prisma migrate dev
+
 npm run dev
 ```
 
@@ -120,7 +165,9 @@ NEXT_PUBLIC_FRONTEND_URL=http://localhost:3001
 
 ```bash
 cd Frontend
+
 npm install
+
 npm run dev
 ```
 
@@ -132,59 +179,66 @@ Frontend runs at **http://localhost:3001**
 
 **Backend** (`Backend/.env`)
 
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | MySQL connection string |
-| `REDIS_URL` | Redis for BullMQ job queue |
-| `BETTER_AUTH_SECRET` | Auth session encryption |
-| `GOOGLE_API_KEY` | Gemini AI |
-| `PINECONE_API_KEY`, `PINECONE_INDEX_NAME` | Vector search |
-| `RAZORPAY_KEY_ID`, `RAZORPAY_SECRET`, `RAZORPAY_WEBHOOK_SECRET_KEY` | Payments |
-| `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_URL_ENDPOINT` | File uploads |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | GitHub OAuth |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth |
-| `FRONTEND_URL`, `BACKEND_URL` | CORS & auth callbacks |
+| Variable                                                               | Purpose                         |
+| ---------------------------------------------------------------------- | ------------------------------- |
+| `DATABASE_URL`                                                         | MySQL connection string         |
+| `REDIS_URL`                                                            | Redis for BullMQ job queue      |
+| `JWT_SECRET`                                                           | JWT access token signing secret |
+| `REFRESH_TOKEN_SECRET`                                                 | Refresh session security        |
+| `GOOGLE_API_KEY`                                                       | Gemini AI                       |
+| `PINECONE_API_KEY`, `PINECONE_INDEX_NAME`                              | Vector search                   |
+| `RAZORPAY_KEY_ID`, `RAZORPAY_SECRET`, `RAZORPAY_WEBHOOK_SECRET_KEY`    | Payments                        |
+| `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_URL_ENDPOINT` | File uploads                    |
+| `MUX_TOKEN_ID`, `MUX_TOKEN_SECRET`                                     | Mux video streaming             |
+| `VIDEO_SDK_API_KEY`, `VIDEO_SDK_SECRET`                                | VideoSDK live classes           |
+| `FRONTEND_URL`, `BACKEND_URL`                                          | CORS configuration              |
 
 **Frontend** (`Frontend/.env.local`)
 
-| Variable | Purpose |
-|---|---|
-| `NEXT_PUBLIC_BACKEND_URL` | Backend API base URL |
-| `NEXT_PUBLIC_FRONTEND_URL` | Frontend URL for auth redirects |
+| Variable                   | Purpose              |
+| -------------------------- | -------------------- |
+| `NEXT_PUBLIC_BACKEND_URL`  | Backend API base URL |
+| `NEXT_PUBLIC_FRONTEND_URL` | Frontend URL         |
 
 ---
 
 ## 🗺️ API Overview
 
-| Endpoint | Description |
-|---|---|
-| `/api/auth` | Authentication (Better Auth) |
-| `/api/course` | Course listing, curriculum, notes |
-| `/api/video` | Video upload & streaming auth |
-| `/api/chat` | AI tutor — ask & fetch chat history |
-| `/api/saveVideo` | Save / unsave / list saved videos |
-| `/api/payment` | Create order, verify payment, webhooks |
-| `/api/user` | Student profile |
-| `/health` | Server health check |
+| Endpoint          | Description                                       |
+| ----------------- | ------------------------------------------------- |
+| `/api/auth`       | JWT authentication and session management         |
+| `/api/tenant`     | Tenant resolution and management                  |
+| `/api/course`     | Course listing, curriculum, notes, and management |
+| `/api/video`      | Video upload & streaming authorization            |
+| `/api/chat`       | AI tutor — ask & fetch chat history               |
+| `/api/saveVideo`  | Save / unsave / list saved videos                 |
+| `/api/payment`    | Create order, verify payment, and webhooks        |
+| `/api/live-class` | Live class creation, scheduling, and management   |
+| `/api/user`       | Student profile                                   |
+| `/health`         | Server health check                               |
 
 ---
 
 ## 🎓 Student Flow
 
-1. Visit the landing page and sign up
+1. Visit the tenant's domain and sign up
 2. Browse available courses on the **Courses** page
 3. Purchase a course via Razorpay
 4. Open a course and start learning on the **Learn** page
 5. Watch videos, save lessons, and chat with the AI tutor
 6. Access notes from **Documents** and revisit saved videos from **Saved**
+7. Join scheduled **Live Classes** with one click
 
 ---
 
 ## 👤 Author
 
-**Adarsh** — Full-stack developer passionate about building education products.
+**Adarsh** — Full-stack developer passionate about building scalable education products.
 
-[![GitHub](https://img.shields.io/badge/GitHub-AdarshSpace-181717?style=flat-square&logo=github)](https://github.com/AdarshSpace)
+[![GitHub](https://img.shields.io/badge/GitHub-AdarshSpace-181717?style=flat-square\&logo=github)](https://github.com/AdarshSpace)
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-AdarshSpace-0A66C2?style=flat-square\&logo=linkedin)](https://www.linkedin.com/in/adarshspace/)
+
 [![Live](https://img.shields.io/badge/Live-motionkart.online-0F6E56?style=flat-square)](https://www.motionkart.online)
 
 ---
