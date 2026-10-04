@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaClient } from '../generated/prisma/client.js';
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import fs from "fs";
 
 
 const adapter = new PrismaMariaDb({
@@ -10,7 +11,9 @@ const adapter = new PrismaMariaDb({
   password: process.env.DB_PASSWORD!,
   database: process.env.DB_NAME!,
   allowPublicKeyRetrieval: true,
-  ssl: false,
+  ssl: {
+    ca: fs.readFileSync("./ca.pem"),
+  },
   });
 
 export const prisma = new PrismaClient({ adapter });
